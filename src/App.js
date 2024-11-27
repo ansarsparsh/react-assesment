@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addTask, toggleComplete, deleteTask } from './redux/store';
+import { addTask, toggleComplete, deleteTask, editTask } from './redux/store';
 
 function App() {
     const [taskInput, setTaskInput] = useState('');
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [editingText, setEditingText] = useState('');
     const tasks = useSelector((state) => state.tasks);
     const dispatch = useDispatch();
 
@@ -14,6 +16,21 @@ function App() {
         }
         dispatch(addTask(taskInput));
         setTaskInput('');
+    };
+
+    const handleEditTask = (index, text) => {
+        setEditingIndex(index);
+        setEditingText(text);
+    };
+
+    const handleSaveEdit = () => {
+        if (editingText.trim() === '') {
+            alert('Task cannot be empty!');
+            return;
+        }
+        dispatch(editTask({ index: editingIndex, text: editingText }));
+        setEditingIndex(null);
+        setEditingText('');
     };
 
     return (
@@ -46,29 +63,64 @@ function App() {
                                         task.isCompleted ? 'list-group-item-success' : ''
                                     }`}
                                 >
-                                    <span
-                                        style={{
-                                            textDecoration: task.isCompleted ? 'line-through' : 'none',
-                                        }}
-                                    >
-                                        {task.text}
-                                    </span>
-                                    <div>
-                                        <button
-                                            className={`btn btn-sm ${
-                                                task.isCompleted ? 'btn-warning' : 'btn-success'
-                                            } me-2`}
-                                            onClick={() => dispatch(toggleComplete(index))}
-                                        >
-                                            {task.isCompleted ? 'Undo' : 'Complete'}
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-danger"
-                                            onClick={() => dispatch(deleteTask(index))}
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+                                    {editingIndex === index ? (
+                                        <div className="d-flex flex-grow-1">
+                                            <input
+                                                type="text"
+                                                className="form-control me-2"
+                                                value={editingText}
+                                                onChange={(e) => setEditingText(e.target.value)}
+                                            />
+                                            <button
+                                                className="btn btn-success btn-sm me-2"
+                                                onClick={handleSaveEdit}
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={() => setEditingIndex(null)}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <span
+                                                style={{
+                                                    textDecoration: task.isCompleted
+                                                        ? 'line-through'
+                                                        : 'none',
+                                                }}
+                                            >
+                                                {task.text}
+                                            </span>
+                                            <div>
+                                                <button
+                                                    className={`btn btn-sm ${
+                                                        task.isCompleted
+                                                            ? 'btn-warning'
+                                                            : 'btn-success'
+                                                    } me-2`}
+                                                    onClick={() => dispatch(toggleComplete(index))}
+                                                >
+                                                    {task.isCompleted ? 'Undo' : 'Complete'}
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-info me-2"
+                                                    onClick={() => handleEditTask(index, task.text)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-danger"
+                                                    onClick={() => dispatch(deleteTask(index))}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </li>
                             ))}
                         </ul>

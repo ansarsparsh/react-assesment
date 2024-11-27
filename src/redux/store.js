@@ -15,10 +15,14 @@ const tasksSlice = createSlice({
         deleteTask: (state, action) => {
             return state.filter((_, index) => index !== action.payload);
         },
+        editTask: (state, action) => {
+            const { index, text } = action.payload;
+            state[index].text = text;
+        },
     },
 });
 
-export const { addTask, toggleComplete, deleteTask } = tasksSlice.actions;
+export const { addTask, toggleComplete, deleteTask, editTask } = tasksSlice.actions;
 
 // Configure the Redux store
 const store = configureStore({
